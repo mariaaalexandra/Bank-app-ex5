@@ -4,6 +4,7 @@ import com.luxoft.bankapp.service.audit.events.AccountEvent;
 import com.luxoft.bankapp.service.audit.events.BalanceEvent;
 import com.luxoft.bankapp.service.audit.events.DepositEvent;
 import com.luxoft.bankapp.service.audit.events.WithdrawEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -14,13 +15,16 @@ public class AuditService implements Audit
 {
     private List<AccountEvent> events;
 
+    @Autowired
+    private EventConditionFilter eventConditionFilter;
+
     public AuditService()
     {
         this.events = new ArrayList<>(100);
     }
 
     @Override
-    @EventListener
+    @EventListener(condition = "#event.amount >= @eventConditionFilter.depositLimit")
     public void auditOperation(DepositEvent event)
     {
         events.add(event);
@@ -28,7 +32,7 @@ public class AuditService implements Audit
     }
 
     @Override
-    @EventListener
+    @EventListener(condition = "#event.amount >= @eventConditionFilter.withdrawalLimit")
     public void auditOperation(WithdrawEvent event)
     {
         events.add(event);
